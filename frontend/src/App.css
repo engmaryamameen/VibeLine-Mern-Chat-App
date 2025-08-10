@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300&display=swap");
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  /* Professional soft gradient background (no image) */
+  background:
+    radial-gradient(900px 600px at 15% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 55%),
+    radial-gradient(800px 600px at 85% 10%, rgba(45, 212, 191, 0.14) 0%, rgba(45, 212, 191, 0) 50%),
+    linear-gradient(180deg, #f7fbff 0%, #eef6ff 45%, #eaf3ff 100%);
+  background-attachment: fixed;
+  background-position: center;
+  background-size: cover;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(136, 136, 136, 0.281);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth page fade-in */
+.App {
+  animation: fadeIn 400ms ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.6;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
