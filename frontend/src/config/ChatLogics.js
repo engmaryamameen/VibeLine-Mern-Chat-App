@@ -45,3 +45,25 @@ export const getSender = (loggedUser, users) => {
 export const getSenderFull = (loggedUser, users) => {
   return users[0]._id === loggedUser._id ? users[1] : users[0];
 };
+
+export const getSenderPic = (loggedUser, users) => {
+  const other = users[0]?._id === loggedUser?._id ? users[1] : users[0];
+  return other?.pic || "";
+};
+
+// Nicknames helpers
+export const getNickname = (chat, userId) => {
+  const list = chat?.nicknames || [];
+  const item = list.find((n) => (n.user?._id || n.user) === userId);
+  return item?.name || "";
+};
+
+export const getDisplayNameForUser = (chat, userId, fallbackName) => {
+  const nick = getNickname(chat, userId);
+  return nick || fallbackName || "";
+};
+
+export const getOtherDisplayName = (loggedUser, chat) => {
+  const other = getSenderFull(loggedUser, chat.users);
+  return getDisplayNameForUser(chat, other?._id, other?.name);
+};

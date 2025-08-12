@@ -12,7 +12,7 @@ const Chatbox = ({ fetchAgain, setFetchAgain, variant = "light", containerProps 
       alignItems="center"
       flexDir="column"
       p={3}
-      bg={variant === "dark" ? "blackAlpha.400" : "white"}
+      bg={variant === "dark" ? "gray.800" : "white"}
       w={{ base: "100%", md: "68%" }}
       borderRadius="lg"
       borderWidth="1px"

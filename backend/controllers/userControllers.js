@@ -82,4 +82,30 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { allUsers, registerUser, authUser };
+// @description   Update profile (name, pic, password)
+// @route         PUT /api/user/profile
+// @access        Protected
+const updateProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  const { name, pic, password } = req.body || {};
+  if (typeof name === "string" && name.trim()) user.name = name.trim();
+  if (typeof pic === "string" && pic.trim()) user.pic = pic.trim();
+  if (typeof password === "string" && password.trim()) user.password = password.trim();
+
+  const saved = await user.save();
+  res.json({
+    _id: saved._id,
+    name: saved.name,
+    email: saved.email,
+    isAdmin: saved.isAdmin,
+    pic: saved.pic,
+    token: generateToken(saved._id),
+  });
+});
+
+module.exports = { allUsers, registerUser, authUser, updateProfile };
