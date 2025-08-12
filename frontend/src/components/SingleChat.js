@@ -2,23 +2,22 @@ import { FormControl } from "@chakra-ui/form-control";
 import { Input } from "@chakra-ui/input";
 import { Box, Text, HStack, Spacer } from "@chakra-ui/layout";
 import "./styles.css";
-import { IconButton, Spinner, useToast } from "@chakra-ui/react";
-import { getSender, getSenderFull } from "../config/ChatLogics";
+import { IconButton, Spinner, useToast, Avatar } from "@chakra-ui/react";
+import { getSender, getOtherDisplayName, getSenderFull } from "../config/ChatLogics";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { ArrowBackIcon, ViewIcon } from "@chakra-ui/icons";
-import ProfileModal from "./miscellaneous/ProfileModal";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
 
 import io from "socket.io-client";
-import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 const ENDPOINT = "http://localhost:5000"; 
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain, variant = "light", onToggleInfo }) => {
+  const { appTheme } = ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -169,17 +168,32 @@ const SingleChat = ({ fetchAgain, setFetchAgain, variant = "light", onToggleInfo
               onClick={() => setSelectedChat("")}
               aria-label="back"
             />
-            <Text fontSize={{ base: "24px", md: "28px" }} fontFamily="Work sans" fontWeight="700">
-              {messages &&
-                (!selectedChat.isGroupChat
-                  ? getSender(user, selectedChat.users)
-                  : selectedChat.chatName.toUpperCase())}
-            </Text>
+            <HStack spacing={3}>
+              <Avatar
+                size="sm"
+                name={
+                  !selectedChat.isGroupChat
+                    ? getSenderFull(user, selectedChat.users)?.name
+                    : selectedChat.chatName
+                }
+                src={
+                  !selectedChat.isGroupChat
+                    ? getSenderFull(user, selectedChat.users)?.pic || undefined
+                    : undefined
+                }
+              />
+              <Text fontSize={{ base: "24px", md: "28px" }} fontFamily="Work sans" fontWeight="700">
+                {messages &&
+                  (!selectedChat.isGroupChat
+                    ? getOtherDisplayName(user, selectedChat)
+                    : selectedChat.chatName)}
+              </Text>
+            </HStack>
             <Spacer />
             <IconButton
               aria-label="chat details"
-              icon={<ViewIcon />}
-              variant="solid"
+              icon={<Text fontSize="xl">⋮</Text>}
+              variant={appTheme === "dark" ? "outline" : "solid"}
               colorScheme="blue"
               size="sm"
               onClick={onToggleInfo}
@@ -190,7 +204,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, variant = "light", onToggleInfo
             flexDir="column"
             justifyContent="flex-end"
             p={3}
-            bg="#F7FAFC"
+            bg={appTheme === "dark" ? "gray.900" : "brand.background"}
             w="100%"
             h="100%"
             borderRadius="lg"
@@ -230,7 +244,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain, variant = "light", onToggleInfo
               )}
               <Input
                 variant="filled"
-                bg="white"
+                bg={appTheme === "dark" ? "gray.700" : "white"}
                 placeholder="Enter a message.."
                 value={newMessage}
                 onChange={typingHandler}

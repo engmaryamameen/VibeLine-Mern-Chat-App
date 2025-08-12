@@ -5,36 +5,68 @@ const fonts = {
   body: `Inter, ${base.fonts?.body || "system-ui"}`,
 };
 
+// Calm & Professional (WhatsApp-like)
+const colors = {
+  brand: {
+    primary: "#25D366", // fresh green
+    secondary: "#075E54", // deep teal
+    background: "#F5F6FA", // soft light gray (light mode)
+    text: "#202C33", // dark charcoal
+    surface: "#FFFFFF",
+  },
+};
+
+const config = {
+  initialColorMode: "light",
+  useSystemColorMode: false,
+};
+
 const components = {
   Button: {
     baseStyle: { fontWeight: 600 },
-    defaultProps: { colorScheme: "blue" },
     variants: {
       solid: {
         borderRadius: "md",
+        bg: colors.brand.primary,
+        color: "white",
+        _hover: { bg: "#1EB85A" },
+        _active: { bg: "#197F40" },
+      },
+      ghost: {
+        color: colors.brand.secondary,
+        _hover: { bg: "rgba(7,94,84,0.08)" },
       },
     },
+    defaultProps: { variant: "solid" },
   },
   Tabs: {
     baseStyle: {
-      tab: { _selected: { color: "blue.600", borderColor: "blue.500" } },
+      tab: { _selected: { color: colors.brand.secondary, borderColor: colors.brand.secondary } },
+    },
+  },
+  Accordion: {
+    baseStyle: {
+      button: {
+        _focus: { boxShadow: "none", outline: "none" },
+        _focusVisible: { boxShadow: "none", outline: "none" },
+      },
     },
   },
   Input: {
-    defaultProps: { focusBorderColor: "blue.400" },
+    defaultProps: { focusBorderColor: colors.brand.secondary },
   },
 };
 
 const styles = {
   global: {
     body: {
-      bg: "white",
-      color: "gray.800",
+      bg: colors.brand.background,
+      color: colors.brand.text,
     },
   },
 };
 
-const customTheme = extendTheme({ fonts, components, styles });
+const customTheme = extendTheme({ fonts, components, styles, colors, config });
 
 export default customTheme;
 

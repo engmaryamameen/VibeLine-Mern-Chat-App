@@ -1,6 +1,42 @@
 const asyncHandler = require("express-async-handler");
 const Chat = require("../models/chatModel");
 const User = require("../models/userModel");
+// @desc    Set or clear a user's nickname in a chat
+// @route   PUT /api/chat/nickname
+// @access  Protected
+const setNickname = asyncHandler(async (req, res) => {
+  const { chatId, userId, nickname } = req.body;
+
+  if (!chatId || !userId) {
+    return res.status(400).json({ message: "chatId and userId are required" });
+  }
+
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found" });
+  }
+
+  // Only participants can set nicknames
+  const isParticipant = chat.users.some((u) => u.toString() === userId);
+  if (!isParticipant) {
+    return res.status(403).json({ message: "Not a chat participant" });
+  }
+
+  // Update or remove nickname
+  if (!Array.isArray(chat.nicknames)) chat.nicknames = [];
+  const existingIdx = chat.nicknames.findIndex((n) => n.user.toString() === userId);
+  if (!nickname) {
+    if (existingIdx !== -1) chat.nicknames.splice(existingIdx, 1);
+  } else if (existingIdx !== -1) {
+    chat.nicknames[existingIdx].name = nickname;
+  } else {
+    chat.nicknames.push({ user: userId, name: nickname });
+  }
+
+  await chat.save();
+  const populated = await Chat.findById(chatId).populate("users", "-password");
+  return res.json(populated);
+});
 
 //@description     Create or fetch One to One Chat
 //@route           POST /api/chat/
@@ -200,4 +236,5 @@ module.exports = {
   renameGroup,
   addToGroup,
   removeFromGroup,
+  setNickname,
 };
