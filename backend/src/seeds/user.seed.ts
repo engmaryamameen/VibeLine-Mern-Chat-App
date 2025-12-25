@@ -1,6 +1,6 @@
 import { config } from "dotenv";
-import { connectDB } from "../lib/db.js";
-import User from "../models/user.model.js";
+import { connectDB } from "../lib/db";
+import User from "../models/user.model";
 
 config();
 
@@ -100,7 +100,7 @@ const seedUsers = [
   },
 ];
 
-const seedDatabase = async () => {
+const seedDatabase = async (): Promise<void> => {
   try {
     await connectDB();
 

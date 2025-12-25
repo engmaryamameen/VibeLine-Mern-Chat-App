@@ -5,16 +5,16 @@ import cors from "cors";
 
 import path from "path";
 
-import { connectDB } from "./lib/db.js";
+import { connectDB } from "./lib/db";
 
-import authRoutes from "./routes/auth.route.js";
-import messageRoutes from "./routes/message.route.js";
-import { app, server } from "./lib/socket.js";
+import authRoutes from "./routes/auth.route";
+import messageRoutes from "./routes/message.route";
+import { app, server } from "./lib/socket";
 
 dotenv.config();
 
-const PORT = process.env.PORT;
-const __dirname = path.resolve();
+const PORT: string | undefined = process.env.PORT;
+const __dirname: string = path.resolve();
 
 app.use(express.json());
 app.use(cookieParser());
