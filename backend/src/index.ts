@@ -14,7 +14,6 @@ import { app, server } from "./lib/socket";
 dotenv.config();
 
 const PORT: string | undefined = process.env.PORT;
-const __dirname: string = path.resolve();
 
 app.use(express.json());
 app.use(cookieParser());

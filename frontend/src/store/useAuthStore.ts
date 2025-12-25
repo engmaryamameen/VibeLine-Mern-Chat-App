@@ -1,26 +1,27 @@
 import { create } from "zustand";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import type { AuthState, User } from "../types";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
-export const useAuthStore = create((set, get) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
   onlineUsers: [],
-  socket: null,
+  socket: null as Socket | null,
 
   checkAuth: async () => {
     try {
-      const res = await axiosInstance.get("/auth/check");
+      const res = await axiosInstance.get<User>("/auth/check");
 
       set({ authUser: res.data });
       get().connectSocket();
-    } catch (error) {
+    } catch (error: any) {
       console.log("Error in checkAuth:", error);
       set({ authUser: null });
     } finally {
@@ -28,30 +29,30 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  signup: async (data) => {
+  signup: async (data: { fullName: string; email: string; password: string }) => {
     set({ isSigningUp: true });
     try {
-      const res = await axiosInstance.post("/auth/signup", data);
+      const res = await axiosInstance.post<User>("/auth/signup", data);
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
-    } catch (error) {
-      toast.error(error.response.data.message);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Signup failed");
     } finally {
       set({ isSigningUp: false });
     }
   },
 
-  login: async (data) => {
+  login: async (data: { email: string; password: string }) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", data);
+      const res = await axiosInstance.post<User>("/auth/login", data);
       set({ authUser: res.data });
       toast.success("Logged in successfully");
 
       get().connectSocket();
-    } catch (error) {
-      toast.error(error.response.data.message);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -63,20 +64,20 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: null });
       toast.success("Logged out successfully");
       get().disconnectSocket();
-    } catch (error) {
-      toast.error(error.response.data.message);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Logout failed");
     }
   },
 
-  updateProfile: async (data) => {
+  updateProfile: async (data: { profilePic: string }) => {
     set({ isUpdatingProfile: true });
     try {
-      const res = await axiosInstance.put("/auth/update-profile", data);
+      const res = await axiosInstance.put<User>("/auth/update-profile", data);
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.log("error in update profile:", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Profile update failed");
     } finally {
       set({ isUpdatingProfile: false });
     }
@@ -95,7 +96,7 @@ export const useAuthStore = create((set, get) => ({
 
     set({ socket: socket });
 
-    socket.on("getOnlineUsers", (userIds) => {
+    socket.on("getOnlineUsers", (userIds: string[]) => {
       set({ onlineUsers: userIds });
     });
   },
