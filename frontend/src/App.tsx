@@ -1,4 +1,5 @@
 import Navbar from "./components/Navbar";
+import DashboardLayout from "./components/DashboardLayout";
 
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
@@ -35,14 +36,72 @@ const App = (): JSX.Element => {
 
   return (
     <div data-theme={theme}>
-      <Navbar />
-
       <Routes>
-        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
-        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+        {/* Unauthenticated routes with Navbar */}
+        <Route
+          path="/login"
+          element={
+            !authUser ? (
+              <>
+                <Navbar />
+                <LoginPage />
+              </>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            !authUser ? (
+              <>
+                <Navbar />
+                <SignUpPage />
+              </>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Authenticated routes with DashboardLayout */}
+        <Route
+          path="/"
+          element={
+            authUser ? (
+              <DashboardLayout>
+                <HomePage />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            authUser ? (
+              <DashboardLayout>
+                <SettingsPage />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            authUser ? (
+              <DashboardLayout>
+                <ProfilePage />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
       </Routes>
 
       <Toaster />

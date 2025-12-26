@@ -111,16 +111,53 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const base64Size = (profilePic.length * 3) / 4 / 1024 / 1024; // Convert to MB
+    if (base64Size > 5) {
+      res.status(400).json({ message: "Image size must be less than 5MB" });
+      return;
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+      timeout: 60000, 
+      resource_type: "image",
+      folder: "chatty-profiles",
+      transformation: [
+        { width: 400, height: 400, crop: "fill", gravity: "face" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePic: uploadResponse.secure_url },
       { new: true }
     );
 
-    res.status(200).json(updatedUser);
-  } catch (error) {
+    if (!updatedUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      createdAt: updatedUser.createdAt,
+    });
+  } catch (error: any) {
     console.log("error in update profile:", error);
+    
+    if (error.http_code === 499 || error.name === "TimeoutError") {
+      res.status(408).json({ message: "Upload timeout. Please try again with a smaller image." });
+      return;
+    }
+    
+    if (error.http_code === 400) {
+      res.status(400).json({ message: "Invalid image format" });
+      return;
+    }
+
     res.status(500).json({ message: "Internal server error" });
   }
 };
