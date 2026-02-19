@@ -1,0 +1,17 @@
+:root {
+  --surface-bg: 12 17 29;
+  --surface-panel: 15 23 42;
+  --surface-soft: 30 41 59;
+  --text-primary: 226 232 240;
+  --text-secondary: 148 163 184;
+  --accent: 34 211 238;
+}
+
+.light {
+  --surface-bg: 241 245 249;
+  --surface-panel: 255 255 255;
+  --surface-soft: 226 232 240;
+  --text-primary: 15 23 42;
+  --text-secondary: 71 85 105;
+  --accent: 8 145 178;
+}
