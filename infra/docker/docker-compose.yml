@@ -1,0 +1,54 @@
+services:
+  web:
+    build:
+      context: ../../
+      dockerfile: infra/docker/web.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:5001/v1
+      NEXT_PUBLIC_WS_URL: http://localhost:5001
+    ports:
+      - '3000:3000'
+    depends_on:
+      - server
+
+  admin:
+    build:
+      context: ../../
+      dockerfile: infra/docker/admin.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:5001/v1
+    ports:
+      - '3001:3001'
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ../../
+      dockerfile: infra/docker/server.Dockerfile
+    env_file:
+      - ../../.env
+    ports:
+      - '5001:5001'
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vibeline
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - vibeline-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+volumes:
+  vibeline-postgres:
