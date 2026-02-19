@@ -1,0 +1,27 @@
+@import '../../../packages/ui/src/theme/tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--surface-soft)) transparent;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top left, rgb(var(--surface-soft) / 0.35), transparent 55%),
+    rgb(var(--surface-bg));
+  color: rgb(var(--text-primary));
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
