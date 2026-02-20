@@ -11,13 +11,15 @@ declare module 'fastify' {
   interface FastifyJWT {
     payload: {
       sub: string;
-      email: string;
+      email?: string;
       role: Role;
+      type: 'access' | 'refresh';
     };
     user: {
       sub: string;
-      email: string;
+      email?: string;
       role: Role;
+      type: 'access' | 'refresh';
     };
   }
 }
