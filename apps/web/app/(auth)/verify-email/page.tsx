@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 
-import { Button, Card } from '@vibeline/ui';
+import { Button, Card, Input, VibeLineLogo } from '@vibeline/ui';
 
 import { AuthGuard } from '@/src/components/auth/auth-guard';
 import { apiClient, ApiError } from '@/src/lib/api-client';
@@ -24,7 +24,59 @@ type VerifyResponse = {
 
 type VerificationState = 'loading' | 'success' | 'error' | 'no-token';
 
-const VerifyEmailPage = () => {
+function VerifyCodeForm({
+  onSuccess,
+  onError
+}: {
+  onSuccess: (res: VerifyResponse) => void;
+  onError: (msg: string) => void;
+}) {
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = useCallback(async () => {
+    const trimmed = code.replace(/\D/g, '').slice(0, 6);
+    if (trimmed.length !== 6) {
+      onError('Please enter a 6-digit code');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await apiClient<VerifyResponse>('/auth/verify-email', {
+        method: 'POST',
+        body: { code: trimmed }
+      });
+      onSuccess(res);
+    } catch (err) {
+      onError(err instanceof ApiError ? err.message : 'Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [code, onSuccess, onError]);
+
+  return (
+    <div className="mt-6 flex flex-col items-center gap-3">
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          inputMode="numeric"
+          maxLength={6}
+          placeholder="000000"
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+          className="w-32 text-center font-mono text-lg tracking-widest"
+          disabled={loading}
+          aria-label="6-digit verification code"
+        />
+        <Button onClick={submit} disabled={loading || code.replace(/\D/g, '').length !== 6}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -32,6 +84,15 @@ const VerifyEmailPage = () => {
 
   const [state, setState] = useState<VerificationState>(token ? 'loading' : 'no-token');
   const [error, setError] = useState<string | null>(null);
+
+  const handleVerifySuccess = useCallback(
+    (response: VerifyResponse) => {
+      setSession({ token: response.tokens.accessToken, currentUser: response.user });
+      setState('success');
+      setTimeout(() => router.replace('/'), 2000);
+    },
+    [router, setSession]
+  );
 
   useEffect(() => {
     if (!token) {
@@ -46,12 +107,7 @@ const VerifyEmailPage = () => {
           body: { token }
         });
 
-        setSession({
-          token: response.tokens.accessToken,
-          currentUser: response.user
-        });
-
-        setState('success');
+        handleVerifySuccess(response);
 
         setTimeout(() => {
           router.replace('/');
@@ -67,15 +123,13 @@ const VerifyEmailPage = () => {
     };
 
     verifyEmail();
-  }, [token, router, setSession]);
+  }, [token, router, setSession, handleVerifySuccess]);
 
   return (
     <AuthGuard mode="guest">
       <main className="flex min-h-screen flex-col items-center justify-center bg-surface-bg px-4 py-16">
         <div className="mb-8 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-            <span className="text-sm font-bold text-surface-bg">V</span>
-          </div>
+          <VibeLineLogo size="sm" className="h-8 w-8 rounded-lg" />
           <span className="text-lg font-semibold text-content-primary">VibeLine</span>
         </div>
 
@@ -131,11 +185,15 @@ const VerifyEmailPage = () => {
                 <Mail className="h-6 w-6 text-content-muted" />
               </div>
               <h1 className="mt-4 text-xl font-semibold text-content-primary">
-                Check your email
+                Check your inbox
               </h1>
               <p className="mt-2 text-sm text-content-secondary">
-                We sent you a verification link. Click the link in your email to verify your account.
+                We&apos;ve sent a verification email. Click the link in the email, or enter the 6-digit verification code below.
               </p>
+              <VerifyCodeForm onSuccess={handleVerifySuccess} onError={setError} />
+              {error && (
+                <p className="mt-2 text-sm text-status-error">{error}</p>
+              )}
               <div className="mt-6">
                 <Link href="/login">
                   <Button variant="secondary">Back to login</Button>
@@ -147,6 +205,27 @@ const VerifyEmailPage = () => {
       </main>
     </AuthGuard>
   );
-};
+}
 
-export default VerifyEmailPage;
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center bg-surface-bg px-4 py-16">
+          <div className="mb-8 flex items-center gap-2">
+            <VibeLineLogo size="sm" className="h-8 w-8 rounded-lg" />
+            <span className="text-lg font-semibold text-content-primary">VibeLine</span>
+          </div>
+          <Card className="w-full max-w-sm animate-fade-in">
+            <div className="flex flex-col items-center py-8 text-center">
+              <Loader2 className="h-12 w-12 animate-spin text-accent" />
+              <p className="mt-4 text-sm text-content-secondary">Loading...</p>
+            </div>
+          </Card>
+        </main>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
