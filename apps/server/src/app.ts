@@ -4,7 +4,6 @@ import { loggerConfig } from '@/config/logger';
 import { registerErrorHandler } from '@/middleware/error.middleware';
 import authPlugin from '@/plugins/auth.plugin';
 import corsPlugin from '@/plugins/cors.plugin';
-import sensiblePlugin from '@/plugins/sensible.plugin';
 import { registerRoutes } from '@/routes';
 
 export const buildApp = () => {
@@ -13,7 +12,6 @@ export const buildApp = () => {
   });
 
   app.register(corsPlugin);
-  app.register(sensiblePlugin);
   app.register(authPlugin);
 
   app.get('/health', async () => ({
