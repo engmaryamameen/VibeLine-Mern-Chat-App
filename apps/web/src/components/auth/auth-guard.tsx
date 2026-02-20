@@ -3,9 +3,10 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare } from 'lucide-react';
 
 import type { User } from '@vibeline/types';
+
+import { VibeLineLogo } from '@vibeline/ui';
 
 import { apiClient } from '@/src/lib/api-client';
 import { useAuthStore } from '@/src/store/auth.store';
@@ -108,9 +109,7 @@ export const AuthGuard = ({ mode, children }: AuthGuardProps) => {
           {/* Glow effect */}
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 blur-xl" />
           {/* Logo container */}
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-            <MessageSquare className="h-8 w-8 text-white" />
-          </div>
+          <VibeLineLogo size="lg" className="relative" />
         </div>
 
         {/* Brand name */}
