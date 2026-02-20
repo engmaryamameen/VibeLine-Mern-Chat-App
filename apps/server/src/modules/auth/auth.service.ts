@@ -39,6 +39,11 @@ const generatePasswordResetToken = (): string => {
   return randomBytes(32).toString('hex');
 };
 
+const generatePasswordResetCode = (): string => {
+  const n = randomBytes(4).readUInt32BE(0) % 1_000_000;
+  return n.toString().padStart(6, '0');
+};
+
 const getPasswordResetTokenExpiry = (): string => {
   const expiry = new Date();
   expiry.setHours(expiry.getHours() + PASSWORD_RESET_TOKEN_EXPIRY_HOURS);
@@ -237,15 +242,17 @@ class AuthService {
     }
 
     const passwordResetToken = generatePasswordResetToken();
+    const passwordResetCode = generatePasswordResetCode();
     const passwordResetTokenExpiresAt = getPasswordResetTokenExpiry();
 
     await userRepository.update(user.id, {
       passwordResetToken,
+      passwordResetCode,
       passwordResetTokenExpiresAt
     });
 
     emailService
-      .sendPasswordResetEmail(payload.email, passwordResetToken, user.displayName)
+      .sendPasswordResetEmail(payload.email, passwordResetToken, passwordResetCode, user.displayName)
       .catch((error) => {
         logger.error({ error, email: payload.email }, 'Failed to send password reset email');
       });
@@ -256,10 +263,15 @@ class AuthService {
   }
 
   async resetPassword(payload: ResetPasswordRequestDto) {
-    const user = await userRepository.findByPasswordResetToken(payload.token);
+    let user = null;
+    if (payload.code) {
+      user = await userRepository.findByPasswordResetCode(payload.code);
+    } else if (payload.token) {
+      user = await userRepository.findByPasswordResetToken(payload.token);
+    }
 
     if (!user) {
-      throw new AppError(400, 'INVALID_TOKEN', 'Password reset token is invalid or has expired');
+      throw new AppError(400, 'INVALID_TOKEN', 'Password reset token or code is invalid or has expired');
     }
 
     if (user.passwordResetTokenExpiresAt) {
@@ -274,6 +286,7 @@ class AuthService {
     await userRepository.update(user.id, {
       passwordHash,
       passwordResetToken: undefined,
+      passwordResetCode: undefined,
       passwordResetTokenExpiresAt: undefined
     });
 

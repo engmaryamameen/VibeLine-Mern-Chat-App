@@ -17,6 +17,7 @@ export type StoredUser = {
   verificationCode?: string | null;
   verificationTokenExpiresAt?: string | null;
   passwordResetToken?: string | null;
+  passwordResetCode?: string | null;
   passwordResetTokenExpiresAt?: string | null;
   createdAt: Date | string;
 };
@@ -32,6 +33,7 @@ const toStoredUser = (row: InferSelectModel<typeof users>): StoredUser => ({
           : String(row.verificationTokenExpiresAt))
       : undefined,
   passwordResetToken: row.passwordResetToken ?? undefined,
+  passwordResetCode: row.passwordResetCode ?? undefined,
   passwordResetTokenExpiresAt:
     row.passwordResetTokenExpiresAt != null
       ? (row.passwordResetTokenExpiresAt instanceof Date
@@ -46,7 +48,8 @@ const toPublicUser = (stored: StoredUser): User => {
     verificationToken: __,
     verificationTokenExpiresAt: ___,
     passwordResetToken: ____,
-    passwordResetTokenExpiresAt: _____,
+    passwordResetCode: _____,
+    passwordResetTokenExpiresAt: ______,
     ...user
   } = stored;
   return {
@@ -90,6 +93,13 @@ class UserRepository {
     return row ? toStoredUser(row) : null;
   }
 
+  async findByPasswordResetCode(code: string): Promise<StoredUser | null> {
+    const row = await db.query.users.findFirst({
+      where: eq(users.passwordResetCode, code)
+    });
+    return row ? toStoredUser(row) : null;
+  }
+
   async list(): Promise<User[]> {
     const rows = await db.query.users.findMany();
     return rows.map((r) => toPublicUser(toStoredUser(r)));
@@ -117,6 +127,7 @@ class UserRepository {
           ? new Date(payload.verificationTokenExpiresAt)
           : null,
         passwordResetToken: payload.passwordResetToken ?? null,
+        passwordResetCode: payload.passwordResetCode ?? null,
         passwordResetTokenExpiresAt: payload.passwordResetTokenExpiresAt
           ? new Date(payload.passwordResetTokenExpiresAt)
           : null
@@ -146,6 +157,8 @@ class UserRepository {
         : null;
     if ('passwordResetToken' in updates)
       payload.passwordResetToken = updates.passwordResetToken ?? null;
+    if ('passwordResetCode' in updates)
+      payload.passwordResetCode = updates.passwordResetCode ?? null;
     if ('passwordResetTokenExpiresAt' in updates)
       payload.passwordResetTokenExpiresAt = updates.passwordResetTokenExpiresAt
         ? new Date(updates.passwordResetTokenExpiresAt)

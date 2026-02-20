@@ -158,7 +158,7 @@ If you didn't create an account, you can safely ignore this email.
     });
   }
 
-  async sendPasswordResetEmail(email: string, token: string, displayName: string): Promise<boolean> {
+  async sendPasswordResetEmail(email: string, token: string, resetCode: string, displayName: string): Promise<boolean> {
     const resetUrl = `${env.APP_URL}/reset-password?token=${token}`;
 
     const html = `
@@ -194,6 +194,14 @@ If you didn't create an account, you can safely ignore this email.
               </h1>
               <p style="margin: 0 0 24px; color: #475569; font-size: 14px; text-align: center; line-height: 1.5;">
                 Hi ${displayName}, we received a request to reset your password. Click the button below to create a new password.
+              </p>
+
+              <!-- Reset Code -->
+              <p style="margin: 0 0 16px; color: #475569; font-size: 14px; text-align: center;">
+                Your reset code: <strong style="letter-spacing: 0.2em; font-size: 18px;">${resetCode}</strong>
+              </p>
+              <p style="margin: 0 0 24px; color: #64748b; font-size: 12px; text-align: center;">
+                Enter this code on the reset page, or click the button below.
               </p>
 
               <!-- Button -->
@@ -238,11 +246,15 @@ If you didn't create an account, you can safely ignore this email.
     const text = `
 Hi ${displayName},
 
-We received a request to reset your password for your VibeLine account. Click the link below to create a new password:
+We received a request to reset your password for your VibeLine account.
+
+Your reset code: ${resetCode}
+
+Or click the link below to create a new password:
 
 ${resetUrl}
 
-This link will expire in 1 hour.
+This link and code will expire in 1 hour.
 
 If you didn't request a password reset, you can safely ignore this email.
 

@@ -145,11 +145,11 @@ export const googleCallbackHandler = async (
     const result = await oauthService.handleGoogleCallback(code);
     reply.header('Set-Cookie', buildRefreshTokenCookie(result.tokens.refreshToken));
 
-    const fragment = new URLSearchParams({
+    const params = new URLSearchParams({
       token: result.tokens.accessToken
     });
 
-    return reply.redirect(`${env.APP_URL}/auth/callback#${fragment.toString()}`);
+    return reply.redirect(`${env.APP_URL}/auth/callback?${params.toString()}`);
   } catch (err) {
     logger.error({ error: err }, 'Google OAuth callback failed');
     return reply.redirect(getOAuthCallbackErrorUrl('oauth_failed'));
@@ -197,11 +197,11 @@ export const githubCallbackHandler = async (
     const result = await oauthService.handleGithubCallback(code);
     reply.header('Set-Cookie', buildRefreshTokenCookie(result.tokens.refreshToken));
 
-    const fragment = new URLSearchParams({
+    const params = new URLSearchParams({
       token: result.tokens.accessToken
     });
 
-    return reply.redirect(`${env.APP_URL}/auth/callback#${fragment.toString()}`);
+    return reply.redirect(`${env.APP_URL}/auth/callback?${params.toString()}`);
   } catch (err) {
     logger.error({ error: err }, 'GitHub OAuth callback failed');
     return reply.redirect(getOAuthCallbackErrorUrl('oauth_failed'));

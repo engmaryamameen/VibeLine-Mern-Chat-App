@@ -13,10 +13,10 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const setSession = useAuthStore((state) => state.setSession);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const token = hashParams.get('token') || searchParams.get('token');
+    const token = searchParams.get('token');
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
@@ -28,29 +28,26 @@ function AuthCallbackContent() {
         oauth_failed: 'Failed to sign in with Google/GitHub'
       };
       setError(errorMessages[errorParam] || 'Authentication failed');
+      setIsLoading(false);
       setTimeout(() => router.replace('/login'), 3000);
       return;
     }
 
     if (!token) {
       setError('No authentication token received');
+      setIsLoading(false);
       setTimeout(() => router.replace('/login'), 3000);
       return;
     }
 
-    // Fetch user info and set session
     const initSession = async () => {
       try {
-        // Remove OAuth fragment token from browser history once extracted.
-        if (window.location.hash) {
-          window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
-        }
-
         const { user } = await apiClient<{ user: User }>('/users/me', { token });
         setSession({ token, currentUser: user });
         router.replace('/');
       } catch {
         setError('Failed to complete sign-in');
+        setIsLoading(false);
         setTimeout(() => router.replace('/login'), 3000);
       }
     };
@@ -61,7 +58,7 @@ function AuthCallbackContent() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="relative">
-        {!error && (
+        {isLoading && (
           <div className="absolute inset-0 animate-ping rounded-2xl bg-gradient-to-br from-blue-500/30 to-indigo-600/30" />
         )}
         <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 blur-xl" />
@@ -70,7 +67,7 @@ function AuthCallbackContent() {
 
       <h1 className="mt-6 text-xl font-bold text-slate-900">VibeLine</h1>
 
-      {error ? (
+      {error && !isLoading ? (
         <div className="mt-4 text-center">
           <p className="text-sm text-red-600">{error}</p>
           <p className="mt-2 text-xs text-slate-500">Redirecting to login...</p>

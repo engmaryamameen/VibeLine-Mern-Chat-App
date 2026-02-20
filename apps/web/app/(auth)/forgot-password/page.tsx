@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Mail,
@@ -14,9 +15,12 @@ import { AuthGuard } from '@/src/components/auth/auth-guard';
 import { apiClient } from '@/src/lib/api-client';
 
 const ForgotPasswordPage = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,6 +43,40 @@ const ForgotPasswordPage = () => {
     }
   };
 
+  const handleCodeChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData.length === 6) {
+      setCode(pastedData.split(''));
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  const handleCodeSubmit = () => {
+    const fullCode = code.join('');
+    if (fullCode.length === 6) {
+      router.push(`/reset-password?code=${fullCode}`);
+    }
+  };
+
   return (
     <AuthGuard mode="guest">
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4 py-16">
@@ -56,9 +94,44 @@ const ForgotPasswordPage = () => {
               </div>
               <h1 className="mt-4 text-xl font-semibold text-slate-900">Check your email</h1>
               <p className="mt-2 text-sm text-slate-600">
-                If an account with that email exists, we&apos;ve sent you a link to reset your password.
+                If an account with that email exists, we&apos;ve sent you a link and a code to reset your password.
               </p>
-              <Link href="/login" className="mt-6 w-full">
+
+              {/* Code input */}
+              <div className="mt-6 w-full">
+                <p className="mb-3 text-sm font-medium text-slate-700">Enter your 6-digit code</p>
+                <div className="flex justify-center gap-2">
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { inputRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={handlePaste}
+                      className="h-12 w-10 rounded-lg border border-slate-300 text-center text-lg font-semibold text-slate-900 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  ))}
+                </div>
+                <Button
+                  className="mt-4 w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                  onClick={handleCodeSubmit}
+                  disabled={code.some((d) => !d)}
+                >
+                  Continue
+                </Button>
+              </div>
+
+              <div className="mt-4 flex w-full items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="text-xs text-slate-400">or</span>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              <Link href="/login" className="mt-4 w-full">
                 <Button variant="secondary" className="w-full">
                   <ArrowLeft className="h-4 w-4" />
                   Back to sign in

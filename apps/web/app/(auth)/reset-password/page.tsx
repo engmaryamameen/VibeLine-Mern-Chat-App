@@ -21,6 +21,7 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const code = searchParams.get('code');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +52,7 @@ function ResetPasswordContent() {
     try {
       await apiClient('/auth/reset-password', {
         method: 'POST',
-        body: { token, password }
+        body: { ...(token ? { token } : { code }), password }
       });
       setSuccess(true);
       setTimeout(() => {
@@ -68,8 +69,8 @@ function ResetPasswordContent() {
     }
   };
 
-  // No token provided
-  if (!token) {
+  // No token or code provided
+  if (!token && !code) {
     return (
       <AuthGuard mode="guest">
         <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4 py-16">

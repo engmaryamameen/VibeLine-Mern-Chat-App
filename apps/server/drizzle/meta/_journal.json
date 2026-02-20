@@ -15,6 +15,13 @@
       "when": 1771593630697,
       "tag": "0001_add_verification_code",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771621438507,
+      "tag": "0002_add-password-reset-code",
+      "breakpoints": true
     }
   ]
 }

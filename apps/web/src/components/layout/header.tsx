@@ -24,7 +24,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
   const logout = async () => {
     try {
-      await apiClient('/auth/logout', { method: 'POST' });
+      await apiClient('/auth/logout', { method: 'POST', body: {} });
     } catch {
       // Proceed with client logout even if server-side logout fails.
     }
