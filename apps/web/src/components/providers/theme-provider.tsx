@@ -15,7 +15,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const nextTheme = resolveTheme(mode);
-    document.documentElement.classList.toggle('light', nextTheme === 'light');
     document.documentElement.classList.toggle('dark', nextTheme === 'dark');
   }, [mode]);
 
