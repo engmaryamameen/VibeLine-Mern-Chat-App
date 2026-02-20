@@ -1,4 +1,4 @@
-import type { AuthTokens, User } from '@vibeline/types';
+import type { User } from '@vibeline/types';
 
 export interface RegisterRequestDto {
   displayName: string;
@@ -11,7 +11,27 @@ export interface LoginRequestDto {
   password: string;
 }
 
+export interface VerifyEmailRequestDto {
+  token: string;
+}
+
+export interface ResendVerificationRequestDto {
+  email: string;
+}
+
+export interface ForgotPasswordRequestDto {
+  email: string;
+}
+
+export interface ResetPasswordRequestDto {
+  token: string;
+  password: string;
+}
+
 export interface AuthResponseDto {
   user: User;
-  tokens: AuthTokens;
+  tokens: {
+    accessToken: string;
+  };
+  message?: string;
 }
