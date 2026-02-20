@@ -12,7 +12,8 @@ export interface LoginRequestDto {
 }
 
 export interface VerifyEmailRequestDto {
-  token: string;
+  token?: string;
+  code?: string;
 }
 
 export interface ResendVerificationRequestDto {
