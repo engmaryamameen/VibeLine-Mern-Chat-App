@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { env } from '@/config/env';
 import { buildApp } from '@/app';
 import { registerSocketServer } from '@/websocket/socket.server';
