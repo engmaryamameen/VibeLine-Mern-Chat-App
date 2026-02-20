@@ -6,6 +6,7 @@ export interface User {
   displayName: string;
   avatarUrl?: string;
   role: Role;
+  emailVerified: boolean;
   createdAt: string;
 }
 
