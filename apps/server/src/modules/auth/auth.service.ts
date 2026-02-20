@@ -24,6 +24,11 @@ const generateVerificationToken = (): string => {
   return randomBytes(32).toString('hex');
 };
 
+const generateVerificationCode = (): string => {
+  const n = randomBytes(4).readUInt32BE(0) % 1_000_000;
+  return n.toString().padStart(6, '0');
+};
+
 const getVerificationTokenExpiry = (): string => {
   const expiry = new Date();
   expiry.setHours(expiry.getHours() + VERIFICATION_TOKEN_EXPIRY_HOURS);
@@ -63,6 +68,7 @@ class AuthService {
 
     const now = new Date().toISOString();
     const verificationToken = generateVerificationToken();
+    const verificationCode = generateVerificationCode();
     const verificationTokenExpiresAt = getVerificationTokenExpiry();
 
     const user: User = {
@@ -79,11 +85,12 @@ class AuthService {
       ...user,
       passwordHash,
       verificationToken,
+      verificationCode,
       verificationTokenExpiresAt
     });
 
     emailService
-      .sendVerificationEmail(payload.email, verificationToken, payload.displayName)
+      .sendVerificationEmail(payload.email, verificationToken, verificationCode, payload.displayName)
       .catch((error) => {
         logger.error({ error, email: payload.email }, 'Failed to send verification email');
       });
@@ -157,8 +164,12 @@ class AuthService {
   }
 
   async verifyEmail(payload: VerifyEmailRequestDto) {
-    const user = await userRepository.findByVerificationToken(payload.token);
-
+    let user = null;
+    if (payload.code) {
+      user = await userRepository.findByVerificationCode(payload.code);
+    } else if (payload.token) {
+      user = await userRepository.findByVerificationToken(payload.token);
+    }
     if (!user) {
       throw new AppError(400, 'INVALID_TOKEN', 'Verification token is invalid or has expired');
     }
@@ -201,14 +212,16 @@ class AuthService {
     }
 
     const verificationToken = generateVerificationToken();
+    const verificationCode = generateVerificationCode();
     const verificationTokenExpiresAt = getVerificationTokenExpiry();
 
     await userRepository.update(user.id, {
       verificationToken,
+      verificationCode,
       verificationTokenExpiresAt
     });
 
-    await emailService.sendVerificationEmail(email, verificationToken, user.displayName);
+    await emailService.sendVerificationEmail(email, verificationToken, verificationCode, user.displayName);
 
     return { message: 'If this email exists, a verification link will be sent.' };
   }
