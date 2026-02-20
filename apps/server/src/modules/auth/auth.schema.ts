@@ -11,9 +11,12 @@ export const loginSchema = z.object({
   password: z.string().min(8).max(72)
 });
 
-export const verifyEmailSchema = z.object({
-  token: z.string().min(1)
-});
+export const verifyEmailSchema = z
+  .object({
+    token: z.string().min(1).optional(),
+    code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits').optional()
+  })
+  .refine((data) => data.token ?? data.code, { message: 'Either token or code is required' });
 
 export const resendVerificationSchema = z.object({
   email: z.string().email()
