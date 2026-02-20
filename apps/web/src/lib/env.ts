@@ -1,9 +1,10 @@
-const getEnv = (key: 'NEXT_PUBLIC_API_BASE_URL' | 'NEXT_PUBLIC_WS_URL', fallback: string) => {
+const getEnv = (key: 'NEXT_PUBLIC_API_BASE_URL' | 'NEXT_PUBLIC_API_URL' | 'NEXT_PUBLIC_WS_URL', fallback: string) => {
   const value = process.env[key];
-  return value && value.length > 0 ? value : fallback;
+  return value != null && value.length > 0 ? value : fallback;
 };
 
+const apiBase = getEnv('NEXT_PUBLIC_API_BASE_URL', getEnv('NEXT_PUBLIC_API_URL', ''));
 export const env = {
-  apiBaseUrl: getEnv('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:5001/v1'),
+  apiBaseUrl: apiBase || '/v1',
   wsUrl: getEnv('NEXT_PUBLIC_WS_URL', 'http://localhost:5001')
 };
