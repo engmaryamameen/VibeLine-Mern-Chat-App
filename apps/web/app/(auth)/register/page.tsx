@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
-  MessageSquare,
   Shield,
   Zap,
   Users,
@@ -18,7 +17,7 @@ import {
 } from 'lucide-react';
 
 import type { User as UserType } from '@vibeline/types';
-import { Button, Input } from '@vibeline/ui';
+import { Button, Input, VibeLineLogo } from '@vibeline/ui';
 
 import { AuthGuard } from '@/src/components/auth/auth-guard';
 import { apiClient } from '@/src/lib/api-client';
@@ -56,6 +55,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,7 +73,8 @@ const RegisterPage = () => {
         body: { displayName, email, password }
       });
 
-      router.replace('/verify-email');
+      setSuccess(true);
+      setTimeout(() => router.replace('/verify-email'), 2500);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to register');
     } finally {
@@ -106,9 +107,7 @@ const RegisterPage = () => {
           <div className="relative z-10 flex flex-1 flex-col justify-center px-12 py-16">
             {/* Logo */}
             <div className="mb-12 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                <MessageSquare className="h-6 w-6 text-white" />
-              </div>
+              <VibeLineLogo size="md" variant="light" className="h-12 w-12 rounded-xl" />
               <span className="text-2xl font-bold text-white">VibeLine</span>
             </div>
 
@@ -169,9 +168,7 @@ const RegisterPage = () => {
           <div className="mx-auto w-full max-w-md">
             {/* Mobile Logo */}
             <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600">
-                <MessageSquare className="h-5 w-5 text-white" />
-              </div>
+              <VibeLineLogo size="md" />
               <span className="text-xl font-bold text-content-primary">VibeLine</span>
             </div>
 
@@ -251,6 +248,15 @@ const RegisterPage = () => {
                 </div>
               </div>
 
+              {success && (
+                <div className="flex items-center gap-2 rounded-lg bg-status-success/10 px-4 py-3 text-sm text-status-success">
+                  <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Registration successful! We&apos;ve sent a verification email to your inbox. Please check your email and click the link to verify your address.</span>
+                </div>
+              )}
+
               {error && (
                 <div className="flex items-center gap-2 rounded-lg bg-status-error/10 px-4 py-3 text-sm text-status-error">
                   <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -263,7 +269,7 @@ const RegisterPage = () => {
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                 type="submit"
-                disabled={loading}
+                disabled={loading || success}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
