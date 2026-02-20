@@ -3,7 +3,7 @@
 import { LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { Avatar, Button } from '@vibeline/ui';
+import { Avatar, Button, VibeLineLogo } from '@vibeline/ui';
 
 import { apiClient } from '@/src/lib/api-client';
 import { useAuthStore } from '@/src/store/auth.store';
@@ -51,9 +51,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </Button>
 
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent">
-            <span className="text-xs font-bold text-surface-bg">V</span>
-          </div>
+          <VibeLineLogo size="sm" />
           <span className="text-sm font-semibold text-content-primary">VibeLine</span>
         </div>
       </div>
